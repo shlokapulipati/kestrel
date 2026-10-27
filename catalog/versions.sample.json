@@ -1,0 +1,15 @@
+{
+  "$schema": "./versions.schema.json",
+  "schemaVersion": 1,
+  "dataStatus": "sample",
+  "retrievedAt": null,
+  "note": "Illustrative values only. Not fetched from any registry or package source.",
+  "tools": {
+    "node": {
+      "versions": [{ "version": "24.x" }, { "version": "22.x" }]
+    },
+    "git": {
+      "versions": [{ "version": "2.55.x" }, { "version": "2.54.x" }]
+    }
+  }
+}

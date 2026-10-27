@@ -1,0 +1,79 @@
+{
+  "$schema": "./tools.schema.json",
+  "schemaVersion": 1,
+  "dataStatus": "sample",
+  "dataNote": "Sample catalog for development. Not reviewed or refreshed from any official source.",
+  "updatedAt": "2026-10-27",
+  "categories": [
+    { "id": "runtimes", "name": "Languages and runtimes" },
+    { "id": "sdks", "name": "SDKs and compilers" },
+    { "id": "databases", "name": "Databases" },
+    { "id": "infrastructure", "name": "Infrastructure" },
+    { "id": "utilities", "name": "Developer utilities" }
+  ],
+  "tools": [
+    {
+      "id": "node",
+      "name": "Node.js",
+      "category": "runtimes",
+      "description": "JavaScript runtime used for web servers, command-line tools and frontend build systems.",
+      "homepage": "https://nodejs.org",
+      "notes": [
+        "Project libraries such as React or Express belong inside each project and are installed with npm, not as global tools."
+      ],
+      "warnings": [
+        {
+          "level": "caution",
+          "text": "Several Node.js versions can coexist on one machine. Kestrel will never remove an existing version automatically."
+        }
+      ],
+      "detection": {
+        "executables": ["node"],
+        "versionArgs": ["--version"],
+        "versionPattern": "^v(\\d+\\.\\d+\\.\\d+)"
+      },
+      "platforms": [
+        {
+          "os": "linux",
+          "distroFamily": "fedora",
+          "arch": ["x86_64"],
+          "status": "planned",
+          "note": "Install method still to be researched (Milestone 8).",
+          "installMethods": []
+        },
+        { "os": "windows", "status": "planned", "installMethods": [] },
+        { "os": "macos", "status": "planned", "installMethods": [] }
+      ]
+    },
+    {
+      "id": "git",
+      "name": "Git",
+      "category": "utilities",
+      "description": "Distributed version control system for tracking changes to source code.",
+      "homepage": "https://git-scm.com",
+      "detection": {
+        "executables": ["git"],
+        "versionArgs": ["--version"],
+        "versionPattern": "^git version (\\d+\\.\\d+\\.\\d+)"
+      },
+      "platforms": [
+        {
+          "os": "linux",
+          "distroFamily": "fedora",
+          "arch": ["x86_64"],
+          "status": "planned",
+          "installMethods": [
+            {
+              "method": "system-package",
+              "packageManager": "dnf",
+              "packageName": "git",
+              "requiresElevation": true
+            }
+          ]
+        },
+        { "os": "windows", "status": "planned", "installMethods": [] },
+        { "os": "macos", "status": "planned", "installMethods": [] }
+      ]
+    }
+  ]
+}
