@@ -1,5 +1,5 @@
 import { NAV_ITEMS, type ViewId } from "@/app/navigation"
-import { CatalogPreview } from "@/components/CatalogPreview"
+import { CatalogScreen } from "@/components/CatalogScreen"
 import { EmptyState } from "@/components/EmptyState"
 import { NavigationSidebar } from "@/components/NavigationSidebar"
 import { ThemeToggle } from "@/components/ThemeToggle"
@@ -26,7 +26,7 @@ export function AppShell({ active, onSelect }: AppShellProps) {
 
         <main className="flex-1 overflow-auto p-6">
           {active === "catalog" ? (
-            <CatalogPreview />
+            <CatalogScreen />
           ) : (
             <EmptyState
               icon={item.icon}
