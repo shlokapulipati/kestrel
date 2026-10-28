@@ -1,13 +1,16 @@
 import { NAV_ITEMS, type ViewId } from "@/app/navigation"
+import { CatalogPreview } from "@/components/CatalogPreview"
 import { EmptyState } from "@/components/EmptyState"
 import { NavigationSidebar } from "@/components/NavigationSidebar"
 import { ThemeToggle } from "@/components/ThemeToggle"
-type AppShellProps={
-    active:ViewId
-    onSelect:(id:ViewId)=>void
+
+type AppShellProps = {
+  active: ViewId
+  onSelect: (id: ViewId) => void
 }
-export function AppShell ({active,onSelect}:AppShellProps){
-    const item = NAV_ITEMS.find((entry) => entry.id === active) ?? NAV_ITEMS[0]
+
+export function AppShell({ active, onSelect }: AppShellProps) {
+  const item = NAV_ITEMS.find((entry) => entry.id === active) ?? NAV_ITEMS[0]
 
   return (
     <div className="flex h-svh bg-background text-foreground">
@@ -22,12 +25,16 @@ export function AppShell ({active,onSelect}:AppShellProps){
         </header>
 
         <main className="flex-1 overflow-auto p-6">
-          <EmptyState
-            icon={item.icon}
-            title={item.label}
-            description={item.description}
-            note={item.status}
-          />
+          {active === "catalog" ? (
+            <CatalogPreview />
+          ) : (
+            <EmptyState
+              icon={item.icon}
+              title={item.label}
+              description={item.description}
+              note={item.status}
+            />
+          )}
         </main>
       </div>
     </div>
