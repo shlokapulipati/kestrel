@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "catalog:check": "node scripts/validate-catalog.mjs",
     "prebuild": "npm run catalog:check",
-    "logos:generate": "node scripts/generate-logos.mjs"
+    "logos:generate": "node scripts/generate-logos.mjs",
+    "typecheck": "tsc -b"
   },
   "dependencies": {
     "@fontsource-variable/geist": "^5.3.0",

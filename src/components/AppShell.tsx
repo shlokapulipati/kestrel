@@ -2,6 +2,7 @@ import { NAV_ITEMS, type ViewId } from "@/app/navigation"
 import { CatalogScreen } from "@/components/CatalogScreen"
 import { EmptyState } from "@/components/EmptyState"
 import { NavigationSidebar } from "@/components/NavigationSidebar"
+import { StacksScreen } from "@/components/StacksScreen"
 import { ThemeToggle } from "@/components/ThemeToggle"
 
 type AppShellProps = {
@@ -27,6 +28,8 @@ export function AppShell({ active, onSelect }: AppShellProps) {
         <main className="flex-1 overflow-auto p-6">
           {active === "catalog" ? (
             <CatalogScreen />
+          ) : active === "stacks" ? (
+            <StacksScreen />
           ) : (
             <EmptyState
               icon={item.icon}
