@@ -3,7 +3,7 @@ import { getCatalogInfo } from "@/catalog/catalog"
 export function DataStatusBanner({ targetLabel }: { targetLabel: string }) {
   const info = getCatalogInfo()
   return (
-    <p className="rounded-md border border-border bg-muted px-3 py-2 text-sm text-muted-foreground">
+    <p className="rounded-md border border-border bg-muted px-3 py-2 text-xs leading-5 text-muted-foreground">
       {info.toolsStatus === "sample"
         ? "Sample data, not refreshed from any official source."
         : "Reviewed catalog data."}{" "}

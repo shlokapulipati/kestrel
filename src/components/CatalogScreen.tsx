@@ -1,7 +1,13 @@
-import { Search, X } from "lucide-react"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { RotateCcw, Search, X } from "lucide-react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
-import { getCategories, getTools, getVersionsFor } from "@/catalog/catalog"
+import {
+  getCatalogInfo,
+  getCategories,
+  getTool,
+  getTools,
+  getVersionsFor,
+} from "@/catalog/catalog"
 import {
   findPlatformEntry,
   TEMP_TARGET,
@@ -10,7 +16,8 @@ import {
 import { ALL_CATEGORIES, countByCategory, filterTools } from "@/catalog/search"
 import { DataStatusBanner } from "@/components/DataStatusBanner"
 import { EmptyState } from "@/components/EmptyState"
-import { ToolRow } from "@/components/ToolRow"
+import { ToolCard } from "@/components/ToolCard"
+import { ToolDetails } from "@/components/ToolDetails"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
@@ -18,10 +25,13 @@ import { cn } from "@/lib/utils"
 export function CatalogScreen() {
   const categories = getCategories()
   const allTools = getTools()
+  const versionsAreSample = getCatalogInfo().versionsStatus === "sample"
 
   const [query, setQuery] = useState("")
   const [categoryId, setCategoryId] = useState<string>(ALL_CATEGORIES)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
   const searchRef = useRef<HTMLInputElement>(null)
+  const lastOpenedRef = useRef<string | null>(null)
 
   const counts = useMemo(
     () => countByCategory(allTools, categories),
@@ -43,13 +53,31 @@ export function CatalogScreen() {
         target instanceof HTMLInputElement ||
         target instanceof HTMLTextAreaElement ||
         target?.isContentEditable
-      if (isTyping) return
+      if (isTyping || !searchRef.current) return
       event.preventDefault()
-      searchRef.current?.focus()
+      searchRef.current.focus()
     }
     window.addEventListener("keydown", onKeyDown)
     return () => window.removeEventListener("keydown", onKeyDown)
   }, [])
+
+  // After closing the details view, put focus back on the card that was opened.
+  useEffect(() => {
+    if (selectedId !== null || lastOpenedRef.current === null) return
+    document.getElementById(`tool-card-${lastOpenedRef.current}`)?.focus()
+    lastOpenedRef.current = null
+  }, [selectedId])
+
+  const openTool = useCallback((toolId: string) => {
+    lastOpenedRef.current = toolId
+    setSelectedId(toolId)
+  }, [])
+  const closeTool = useCallback(() => setSelectedId(null), [])
+
+  function resetFilters() {
+    setQuery("")
+    setCategoryId(ALL_CATEGORIES)
+  }
 
   const categoryButtons = [
     { id: ALL_CATEGORIES, name: "All tools", count: allTools.length },
@@ -59,44 +87,29 @@ export function CatalogScreen() {
       count: counts[category.id] ?? 0,
     })),
   ]
-
+  const activeCategoryName =
+    categoryButtons.find((button) => button.id === categoryId)?.name ??
+    "All tools"
   const trimmedQuery = query.trim()
+  const filtersActive = query !== "" || categoryId !== ALL_CATEGORIES
+  const selectedTool = selectedId === null ? undefined : getTool(selectedId)
 
   return (
-    <div className="mx-auto flex max-w-5xl flex-col gap-4">
+    <div className="@container mx-auto flex max-w-6xl flex-col gap-4">
       <DataStatusBanner targetLabel={TEMP_TARGET_LABEL} />
 
-      <div className="flex flex-col gap-4 md:flex-row">
-        <nav
-          aria-label="Categories"
-          className="flex gap-1 overflow-x-auto md:w-56 md:shrink-0 md:flex-col md:overflow-visible"
-        >
-          {categoryButtons.map(({ id, name, count }) => {
-            const isActive = id === categoryId
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setCategoryId(id)}
-                aria-pressed={isActive}
-                className={cn(
-                  "flex shrink-0 items-center justify-between gap-3 rounded-md px-3 py-2 text-left text-sm outline-none transition-colors",
-                  "focus-visible:ring-2 focus-visible:ring-ring",
-                  isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground",
-                )}
-              >
-                <span className="whitespace-nowrap md:whitespace-normal">
-                  {name}
-                </span>
-                <span className="font-mono text-xs">{count}</span>
-              </button>
-            )
-          })}
-        </nav>
-
-        <section aria-label="Tools" className="min-w-0 flex-1 space-y-3">
+      {selectedTool ? (
+        <ToolDetails
+          key={selectedTool.id}
+          tool={selectedTool}
+          platform={findPlatformEntry(selectedTool, TEMP_TARGET)}
+          targetLabel={TEMP_TARGET_LABEL}
+          versions={getVersionsFor(selectedTool.id)}
+          versionsAreSample={versionsAreSample}
+          onBack={closeTool}
+        />
+      ) : (
+        <>
           <div className="relative">
             <Search
               className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
@@ -112,7 +125,7 @@ export function CatalogScreen() {
               }}
               placeholder="Search tools by name   ( / )"
               aria-label="Search tools by name"
-              className="pl-9 pr-9"
+              className="h-10 pl-9 pr-9"
             />
             {query !== "" ? (
               <Button
@@ -120,7 +133,7 @@ export function CatalogScreen() {
                 variant="ghost"
                 size="icon"
                 aria-label="Clear search"
-                className="absolute right-1 top-1/2 size-7 -translate-y-1/2"
+                className="absolute right-1 top-1/2 size-8 -translate-y-1/2"
                 onClick={() => {
                   setQuery("")
                   searchRef.current?.focus()
@@ -131,9 +144,55 @@ export function CatalogScreen() {
             ) : null}
           </div>
 
-          <p className="text-xs text-muted-foreground" aria-live="polite">
-            {visibleTools.length} of {allTools.length} tools
-          </p>
+          <nav aria-label="Categories">
+            <ul className="flex gap-1.5 overflow-x-auto p-0.5 @3xl:flex-wrap @3xl:overflow-visible">
+              {categoryButtons.map(({ id, name, count }) => {
+                const isActive = id === categoryId
+                return (
+                  <li key={id} className="shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setCategoryId(id)}
+                      aria-pressed={isActive}
+                      className={cn(
+                        "inline-flex items-center gap-2 whitespace-nowrap rounded-md border px-2.5 py-1 text-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring",
+                        isActive
+                          ? "border-primary/60 bg-accent text-accent-foreground"
+                          : "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
+                      )}
+                    >
+                      {name}
+                      <span className="font-mono text-xs opacity-80">{count}</span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </nav>
+
+          <div className="flex min-h-8 items-center justify-between gap-3">
+            <h2 className="text-sm font-medium">
+              {activeCategoryName}{" "}
+              <span
+                className="font-mono text-xs font-normal text-muted-foreground"
+                aria-live="polite"
+              >
+                {visibleTools.length} of {allTools.length} tools
+              </span>
+            </h2>
+            {filtersActive ? (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label="Reset search and category"
+                onClick={resetFilters}
+              >
+                <RotateCcw />
+                Reset
+              </Button>
+            ) : null}
+          </div>
 
           {visibleTools.length === 0 ? (
             <div className="space-y-3">
@@ -146,39 +205,37 @@ export function CatalogScreen() {
                 }
                 description={
                   trimmedQuery !== ""
-                    ? "Try a different name, or clear the search."
+                    ? "Try a different name, or reset the filters."
                     : "The catalog is added to in phases. This category simply has no entries yet."
                 }
               />
-              {trimmedQuery !== "" ? (
+              {filtersActive ? (
                 <div className="flex justify-center">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setQuery("")}
-                  >
-                    Clear search
+                  <Button type="button" variant="outline" onClick={resetFilters}>
+                    Reset filters
                   </Button>
                 </div>
               ) : null}
             </div>
           ) : (
-            <ul className="space-y-2">
+            <ul className="grid grid-cols-1 gap-3 @lg:grid-cols-2 @3xl:grid-cols-3">
               {visibleTools.map((tool) => (
-                <li key={tool.id}>
-                  <ToolRow
+                <li key={tool.id} className="min-w-0">
+                  <ToolCard
                     tool={tool}
                     platform={findPlatformEntry(tool, TEMP_TARGET)}
                     targetLabel={TEMP_TARGET_LABEL}
                     state="not-checked"
                     versions={getVersionsFor(tool.id)}
+                    versionsAreSample={versionsAreSample}
+                    onOpen={openTool}
                   />
                 </li>
               ))}
             </ul>
           )}
-        </section>
-      </div>
+        </>
+      )}
     </div>
   )
 }

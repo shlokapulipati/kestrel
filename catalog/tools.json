@@ -5,8 +5,8 @@
   "dataNote": "Sample catalog for development. Not reviewed or refreshed from any official source.",
   "updatedAt": "2026-10-27",
   "categories": [
-    { "id": "runtimes", "name": "Languages and runtimes" },
-    { "id": "sdks", "name": "SDKs and compilers" },
+    { "id": "runtimes", "name": "Languages & runtimes" },
+    { "id": "sdks", "name": "SDKs & compilers" },
     { "id": "databases", "name": "Databases" },
     { "id": "infrastructure", "name": "Infrastructure" },
     { "id": "utilities", "name": "Developer utilities" }
